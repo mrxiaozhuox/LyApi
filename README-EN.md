@@ -31,6 +31,10 @@ Lyapi is a PHP Web Development Framework, which can quickly develop an easy to m
 - Visualization Develop：Use Visualization Application Manage Framework（Developing）。
 - Project in continuous update ...
 
+## More components
+
+We will update more components for developers to use.
+
 ## How to install
 
 Use Composer Create LyApi Project:

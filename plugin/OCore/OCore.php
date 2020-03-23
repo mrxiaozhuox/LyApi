@@ -171,6 +171,11 @@ class OCore extends Core{
 
         // ---------- 这边给出Demo以供参考 ---------- //
 
+        // 处理接口程序头文件
+        if(is_subclass_of($using_namespace,'LyApi\core\classify\API')){
+            header('Content-type: application/json');
+        }
+
         // 没有被特殊处理就正常运行
         return [
             'namespace' => $using_namespace,
