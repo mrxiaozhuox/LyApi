@@ -4,13 +4,6 @@ namespace LyApi\core\classify;
 
 class VIEW extends BASIC
 {
-
-    //设置头文件
-    public static function SetHeader($string, $replace = true, $http_response_code = null)
-    {
-        header($string, $replace, $http_response_code);
-    }
-
     //获取各种数据
     public static function GET($type, $key)
     {
