@@ -2,9 +2,13 @@
 
 namespace LyApi\cache;
 
-class FileCache
+class FileCache implements Cache
 {
     private $dir;
+
+    /**
+     * 初始化缓存设置.
+     */
     public function __construct($group = null)
     {
         if (is_null($group)) {
@@ -19,6 +23,15 @@ class FileCache
         $this->dir = $dir;
     }
 
+    /**
+     * 设置一个缓存值.
+     *
+     * @param string $key 键名
+     * @param string $data 数据
+     * @param string $expire 过期时间
+     *
+     * @return boolean
+     */
     public function set($key, $data, $expire = 0)
     {
         $filename = $this->dir . '/' . md5($key) . '.lyc';
@@ -43,6 +56,13 @@ class FileCache
         }
     }
 
+    /**
+     * 获取一个缓存值.
+     *
+     * @param string $key 键名
+     *
+     * @return string
+     */
     public function get($key)
     {
         $filename = $this->dir . '/' . md5($key) . '.lyc';
@@ -63,6 +83,13 @@ class FileCache
         }
     }
 
+    /**
+     * 判断一个缓存键是否存在.
+     *
+     * @param string $key 键名
+     *
+     * @return boolean
+     */
     public function has($key)
     {
         if ($this->get($key) == '') {
@@ -72,12 +99,24 @@ class FileCache
         }
     }
 
+
+    /**
+     * 删除一个缓存键.
+     *
+     * @param string $key 键名
+     *
+     * @return boolean
+     */
     public function delete($key)
     {
         $filename = $this->dir . '/' . md5($key) . '.lyc';
         return @unlink($filename);
     }
 
+
+    /**
+     * 清空所有缓存.
+     */
     public function clean()
     {
         $dirs = scandir($this->dir);
