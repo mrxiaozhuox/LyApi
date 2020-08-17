@@ -193,14 +193,14 @@ class OCore extends Core{
         // var_dump($respnse_data);
 
         // 进行关键词过滤（不需要注释，提高程序速度）
-        $config = new PConfig('OCore');
-        $words = explode(',',$config->ReadConfig("setting")['FilteWord']);
-        foreach($respnse_data as $key => $val){
-            foreach($words as $word){
-                $val = str_ireplace($word,'**',$val);
-            }
-            $respnse_data[$key] = $val;
-        }
+        // $config = new PConfig('OCore');
+        // $words = explode(',',$config->ReadConfig("setting")['FilteWord']);
+        // foreach($respnse_data as $key => $val){
+        //     foreach($words as $word){
+        //         $val = str_ireplace($word,'**',$val);
+        //     }
+        //     $respnse_data[$key] = $val;
+        // }
 
 
         return [
