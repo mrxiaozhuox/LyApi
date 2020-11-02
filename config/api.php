@@ -9,7 +9,6 @@ return array(
         'code' => '$code',
         'data' => '$data',
         'msg' => '$msg'
-        // 'using' => '$usi'                // 目前支持自定义数据（数据放在CUSTOM_DATA处）
     ),
     'ACCESS_METHODS' => 'URL',              // 服务获取类型（ URL 或 GET ）
     'URL_METHOD_SETTING' => [               // 当上方类型选择为 URL 时的配置（ GET请无视 ）
@@ -23,9 +22,7 @@ return array(
     ],
     'PRIORITY_OUTPUT' => '',                // 优先输出内容（ 可为HTML代码 ）
     'HTTP_STATUS_SET' => true,              // 接口是否使用Header返回状态码
-    'CUSTOM_DATA' =>     array(             // 其他数据（ 用于抓RESONSE ）
-        // 'usi' => "Hello World"              // 自定义数据内容
-    ),
+    'CUSTOM_DATA' =>   array(),             // 其他数据（ 用于抓RESONSE ）
     'ERROR_MESSAGE' => array(               // 自定义错误信息
         'service_not_find' => array(            // service找不到时的返回数据
             'code' => '400',

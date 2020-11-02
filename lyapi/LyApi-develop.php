@@ -19,7 +19,6 @@ class LyApi
 
     //普通对象函数
     private $appConfig = [];
-    private $Response_Code = 400;
 
     public function __construct($Config = [])
     {
@@ -65,9 +64,16 @@ class LyApi
         }
     }
 
-    public function createStructure(){
+    public function createStructure($expand, $data){
         $apiConfig = $this->appConfig['apiConfig'];
         $resopnse = $apiConfig['DEFAULT_RESPONSE'];
+
+        $structure = array();
+
+        foreach ($apiConfig as $key => $value) {
+            if(){}
+        }
+
     }
 
 
