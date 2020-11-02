@@ -27,7 +27,7 @@ class LyApi
             $Config['Http_Status_Set'] = true;
         }
 
-        $Config["apiConfig"] = Config::getConfig("api","");
+        $Config["apiConfig"] = Config::getConfig("api", "");
 
         $this->appConfig = $Config;
     }
@@ -60,33 +60,51 @@ class LyApi
         $service = $apiConfig['GET_METHOD_SETTING']['DEFAULT_SERVICE'];
 
         if ($methods == "URL" || Request::Request($service) != "") {
+        
+                
+        
         } else {
         }
     }
 
-    public function createStructure($expand, $data){
+    // 接口结构生成
+    public function createStructure($expand, $data)
+    {
+
         $apiConfig = $this->appConfig['apiConfig'];
         $resopnse = $apiConfig['DEFAULT_RESPONSE'];
 
         $structure = array();
 
         foreach ($apiConfig as $key => $value) {
-            if(){}
+            if (substr($value, 0, 1) == "$") {
+                $need_data = substr($value, 1, sizeof($value) - 1);
+                if (in_array($need_data, $data)) {
+                    $structure[$key] = $data[$need_data];
+                } else {
+                    if ($need_data == "code") {
+                        $structure[$need_data] = 0;
+                    } else {
+                        $structure[$need_data] = "";
+                    }
+                }
+            }
         }
 
+        return $structure;
     }
 
 
     public function showError($focus = "API", $data = array())
     {
-        if($focus != "API"){
+        if ($focus != "API") {
             $DirPath = LyApi . '/app/view/error/';
             if (is_file($DirPath . $data . '.html')) {
                 return file_get_contents($DirPath . $data . '.html');
             } else {
                 return file_get_contents($DirPath . 'default.html');
             }
-        }else{
+        } else {
             // return ;
         }
     }

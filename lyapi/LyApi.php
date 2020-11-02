@@ -14,16 +14,10 @@ class LyApi
 
     //LyAPI信息：
     public static $version = "1.7.0";
-   
+
     //输出接口程序最终的数据
-    private static function output($other_data = array(), $priority_output = "", $http_status_set = true)
+    private static function output($http_status_set = true)
     {
-
-        //优先输出 用于在接口数据返回前输出一些数据 (慎用)
-        if ($priority_output != '') {
-            // echo $priority_output;
-        }
-
         $Api_Config = require LyApi . '/config/api.php';
         $Using_ECore = Config::getConfig('func', '')['USING_ECORE'];
 
@@ -88,9 +82,9 @@ class LyApi
                 if (isset($Target_Result['rewrite'])) {
                     $rewrite_func = $Target_Result['rewrite'];
                 }
-                if(isset($Target_Result['backval'])){
+                if (isset($Target_Result['backval'])) {
                     $backval = $Target_Result['backval'];
-                }else{
+                } else {
                     $backval = null;
                 }
             }
@@ -122,7 +116,7 @@ class LyApi
                                 @$Func_Return = $class->$func('API', $_REQUEST);
                             } else {
 
-                                @$Func_Return = $rewrite_func('API', $_REQUEST,$backval);
+                                @$Func_Return = $rewrite_func('API', $_REQUEST, $backval);
                             }
 
                             if (true) {
@@ -245,7 +239,7 @@ class LyApi
                             }
 
                             //处理返回值为NULL的情况 优先级 (0)
-                            if (! is_null($Func_Return) && $Func_Return != []) {
+                            if (!is_null($Func_Return) && $Func_Return != []) {
                                 $RS['data'] = $Func_Return;
                             }
                         } else {
@@ -253,7 +247,7 @@ class LyApi
                             $function_not_find = $Api_Config['ERROR_MESSAGE']['function_not_find'];
 
                             self::httpStatus($function_not_find['code'], $http_status_set);
-                            echo self::CreateRs($RESPONSE, $function_not_find, $other_data);
+                            echo self::CreateRs($RESPONSE, $function_not_find);
                             return $function_not_find['code'];
                         }
                         //捕获异常
@@ -273,7 +267,7 @@ class LyApi
                         $RS['msg'] = $e->ErrorMsg();
                         $RS['data'] = array();
                     } catch (CustomException $e) {
-                        self::httpStatus($e->getCode(),$http_status_set);
+                        self::httpStatus($e->getCode(), $http_status_set);
                         echo $e->getMessage();
                         return $e->ErrorCode();
                     }
@@ -284,7 +278,7 @@ class LyApi
                         $RS = $Tmp_FinalExamine_Data['data'];
                     }
                     self::httpStatus($RS['code'], $http_status_set);
-                    echo self::CreateRs($RESPONSE, $RS, $other_data);
+                    echo self::CreateRs($RESPONSE, $RS);
 
                     //调用结束函数
                     if (in_array($Func_Config['AFTER_FUNC'], $methods)) {
@@ -309,7 +303,7 @@ class LyApi
                             if ($rewrite_func == null) {
                                 echo $class->$func('API', $_REQUEST);
                             } else {
-                                echo $rewrite_func('API', $_REQUEST,$backval);
+                                echo $rewrite_func('API', $_REQUEST, $backval);
                             }
                         } catch (ClientException $e) {
                             echo self::ShowError($e->ErrorCode());
@@ -323,7 +317,7 @@ class LyApi
                                 'code' => $e->ErrorCode(),
                                 'data' => $e->getMessage(),
                                 'msg' => ''
-                            ], $other_data);
+                            ]);
                         }
                     } else {
                         echo self::ShowError(404);
@@ -341,7 +335,7 @@ class LyApi
                     $class_not_extend = $Api_Config['ERROR_MESSAGE']['class_not_extend'];
 
                     self::httpStatus($class_not_extend['code'], $http_status_set);
-                    echo self::CreateRs($RESPONSE, $class_not_extend, $other_data);
+                    echo self::CreateRs($RESPONSE, $class_not_extend);
                     return $class_not_extend['code'];
                 }
             } else {
@@ -350,7 +344,7 @@ class LyApi
                 $class_not_find = $Api_Config['ERROR_MESSAGE']['class_not_find'];
 
                 self::httpStatus($class_not_find['code'], $http_status_set);
-                echo self::CreateRs($RESPONSE, $class_not_find, $other_data);
+                echo self::CreateRs($RESPONSE, $class_not_find);
                 return $class_not_find['code'];
             }
         } else {
@@ -359,7 +353,7 @@ class LyApi
             $service_not_find = $Api_Config['ERROR_MESSAGE']['service_not_find'];
 
             self::httpStatus($service_not_find['code'], $http_status_set);
-            echo self::CreateRs($RESPONSE, $service_not_find, $other_data);
+            echo self::CreateRs($RESPONSE, $service_not_find);
             return $service_not_find['code'];
         }
     }
@@ -475,14 +469,8 @@ class LyApi
     public function __construct($Config = [])
     {
         // 对配置进行处理
-        if (!array_key_exists("Priority_Output", $Config)) {
-            $Config['Priority_Output'] = '';
-        }
         if (!array_key_exists("Http_Status_Set", $Config)) {
             $Config['Http_Status_Set'] = true;
-        }
-        if (!array_key_exists("Other_Data", $Config)) {
-            $Config['Other_Data'] = [];
         }
 
         $this->APP_Config = $Config;
@@ -492,7 +480,7 @@ class LyApi
     public function Run()
     {
         $Config = $this->APP_Config;
-        $RespCode = self::output($Config['Other_Data'], $Config['Priority_Output'], $Config['Http_Status_Set']);
+        $RespCode = self::output($Config['Http_Status_Set']);
         $this->Response_Code = $RespCode;
         return $RespCode;
     }

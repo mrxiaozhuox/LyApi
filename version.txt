@@ -2,7 +2,7 @@ FrameWork Version : 1.7.0.5
 FrameWork Log :
 1.2.3 :
     1. 修复了Debug配置Whoops关闭无效的问题。
-    2. 在API配置增加"PRIORITY_OUTPUT"选项用于优先输出。
+    2. 在API配置增加"PRIORITY_OUTPUT"选项用于优先输出。 （已删除）
     3. 增加Version.txt文件，用来记录更新。
     4. 增加部分注释。
     5. 同时更新框架版本：1.5.5 具体信息请前往Lyapi-Core下的version.txt中查看。
@@ -15,7 +15,7 @@ FrameWork Log :
     3. 对medoo配置文件进行修改。
     4. 同时更新框架版本：1.5.7 具体信息请前往Lyapi-Core下的version.txt中查看。
 1.2.6 : 
-    1. 增加"CUSTOM_DATA"配置，用于自定义数据。
+    1. 增加"CUSTOM_DATA"配置，用于自定义数据。 （已删除）
     2. 对接口配置文件进行修改。
     3. 同时更新框架版本：1.5.8 具体信息请前往Lyapi-Core下的version.txt中查看。
 1.2.8 : 

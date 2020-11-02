@@ -15,14 +15,10 @@ $LyAPI_Version = LyApi::$version;
 
 $config = Config::getConfig('api', '');
 
-$priority_output = $config["PRIORITY_OUTPUT"];
 $http_status_set = $config["HTTP_STATUS_SET"];
-$custom_data =     $config["CUSTOM_DATA"];
 
 $LyAPI = new LyApi([
-    'Priority_Output' =>    $priority_output,
-    'Http_Status_Set' =>    $http_status_set,
-    'Other_Data' =>         $custom_data
+    'Http_Status_Set' =>    $http_status_set
 ]);
 
 // ------可以在这里进行一些前置操作------//
