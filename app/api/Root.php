@@ -16,7 +16,6 @@ use LyApi\tools\Template;
 
 class Root extends VIEW
 {
-
     // 主页面渲染：处理程序
     public function Index()
     {
@@ -28,8 +27,8 @@ class Root extends VIEW
             $ChangeNow = '随机数据_XXXX';
         }
 
-        $launchData =  Launch::LaunchApi('APP\api\Demo','Hello');
-
+        $launchData =  Launch::LaunchApi('Demo.Hello');
+        
         if($ModeNow == 'Test'){
             return Template::RenderTemplate(file_get_contents(LyApi . '/app/view/html/test.html'),[
                 'LyApi_Version' => LyApi::$version,
@@ -46,27 +45,8 @@ class Root extends VIEW
         }
     }
 
-    // 资源文件渲染：程序需要的静态资源
-    // PS: 已废弃，程序更新了新的解决方案（ 位于Ecore程序中 ）
-    public function Resource()
-    {
-        $type = Request::Get('type');
-        $location = Request::Get('location');
-
-        if($location == 'bootstrap'){
-            if($type == 'js'){
-                return file_get_contents(LyApi . '/app/view/static/bootstrap/js/bootstrap.min.js');
-            }elseif($type == 'css'){
-                return file_get_contents(LyApi . '/app/view/static/bootstrap/css/bootstrap.min.css');
-            }else{
-                return '';
-            }
-        }elseif($location == 'jquery'){
-            return file_get_contents(LyApi . '/app/view/static/jquery-3.4.1.min.js');
-        }else{
-            return '';
-        }
-
+    public function Error(){
+        throw new ClientException("错误渲染测试", 404);
     }
 
 }

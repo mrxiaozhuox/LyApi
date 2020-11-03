@@ -31,6 +31,7 @@ class ComposerStaticInit3afce963f6d23d31771b09171b06bc27
         ),
         'A' => 
         array (
+            'Admin\\' => 6,
             'APP\\' => 4,
         ),
     );
@@ -59,6 +60,10 @@ class ComposerStaticInit3afce963f6d23d31771b09171b06bc27
         'LyApi\\' => 
         array (
             0 => __DIR__ . '/../..' . '/lyapi',
+        ),
+        'Admin\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/admin',
         ),
         'APP\\' => 
         array (

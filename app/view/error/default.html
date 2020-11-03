@@ -1,26 +1,24 @@
-<!doctype html>
 <html>
+
 <head>
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>站点 - Error</title>
-<style>
-	body{
-		background-color:#444;
-		font-size:14px;
-	}
-	h3{
-		font-size:60px;
-		color:#eee;
-		text-align:center;
-		padding-top:30px;
-		font-weight:normal;
-	}
-</style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>站点访问错误</title>
+	<style>
+		body {
+			font: 14px Verdana, "Helvetica Neue", helvetica, Arial, "Microsoft YaHei", sans-serif;
+		}
+	</style>
 </head>
 
 <body>
-<h3>未知错误，请联系站点管理员...</h3>
+	<div align="center">
+		<h1>访问错误 - {{ERRINFO}}</h1>
+		<h2>错误状态码：{{ERRCODE}}</h2>
+		<hr>
+		<h3>站点访问出现问题，请联系管理员 - { <a href="http://lyapi.wwsg18.com">LyApi</a> }</h3>
+	</div>
+
 </body>
+
 </html>

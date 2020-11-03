@@ -6,13 +6,19 @@
         "source": {
             "type": "git",
             "url": "https://github.com/catfan/Medoo.git",
-            "reference": "4b3194a526e7e0ace7efd3a6773f0805fd47bef9"
+            "reference": "2d675f73e23f63bbaeb9a8aa33318659a3d3c32f"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/catfan/Medoo/zipball/4b3194a526e7e0ace7efd3a6773f0805fd47bef9",
-            "reference": "4b3194a526e7e0ace7efd3a6773f0805fd47bef9",
-            "shasum": ""
+            "url": "https://api.github.com/repos/catfan/Medoo/zipball/2d675f73e23f63bbaeb9a8aa33318659a3d3c32f",
+            "reference": "2d675f73e23f63bbaeb9a8aa33318659a3d3c32f",
+            "shasum": "",
+            "mirrors": [
+                {
+                    "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                    "preferred": true
+                }
+            ]
         },
         "require": {
             "ext-pdo": "*",
@@ -27,7 +33,7 @@
             "ext-pdo_sqlite": "For SQLite database",
             "ext-pdo_sqlsrv": "For MSSQL database on both Window/Liunx platform"
         },
-        "time": "2019-10-26T06:27:51+00:00",
+        "time": "2020-02-11T08:20:42+00:00",
         "type": "framework",
         "installation-source": "source",
         "autoload": {
@@ -63,18 +69,24 @@
     },
     {
         "name": "filp/whoops",
-        "version": "2.5.0",
-        "version_normalized": "2.5.0.0",
+        "version": "2.7.1",
+        "version_normalized": "2.7.1.0",
         "source": {
             "type": "git",
             "url": "https://github.com/filp/whoops.git",
-            "reference": "cde50e6720a39fdacb240159d3eea6865d51fd96"
+            "reference": "fff6f1e4f36be0e0d0b84d66b413d9dcb0c49130"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/filp/whoops/zipball/cde50e6720a39fdacb240159d3eea6865d51fd96",
-            "reference": "cde50e6720a39fdacb240159d3eea6865d51fd96",
-            "shasum": ""
+            "url": "https://api.github.com/repos/filp/whoops/zipball/fff6f1e4f36be0e0d0b84d66b413d9dcb0c49130",
+            "reference": "fff6f1e4f36be0e0d0b84d66b413d9dcb0c49130",
+            "shasum": "",
+            "mirrors": [
+                {
+                    "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                    "preferred": true
+                }
+            ]
         },
         "require": {
             "php": "^5.5.9 || ^7.0",
@@ -82,18 +94,18 @@
         },
         "require-dev": {
             "mockery/mockery": "^0.9 || ^1.0",
-            "phpunit/phpunit": "^4.8.35 || ^5.7",
-            "symfony/var-dumper": "^2.6 || ^3.0 || ^4.0"
+            "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.0",
+            "symfony/var-dumper": "^2.6 || ^3.0 || ^4.0 || ^5.0"
         },
         "suggest": {
             "symfony/var-dumper": "Pretty print complex values better with var-dumper available",
             "whoops/soap": "Formats errors as SOAP responses"
         },
-        "time": "2019-08-07T09:00:00+00:00",
+        "time": "2020-01-15T10:00:00+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
-                "dev-master": "2.2-dev"
+                "dev-master": "2.6-dev"
             }
         },
         "installation-source": "dist",
@@ -109,8 +121,8 @@
         "authors": [
             {
                 "name": "Filipe Dobreira",
-                "role": "Developer",
-                "homepage": "https://github.com/filp"
+                "homepage": "https://github.com/filp",
+                "role": "Developer"
             }
         ],
         "description": "php error handling for cool kids",
@@ -137,7 +149,13 @@
             "type": "zip",
             "url": "https://api.github.com/repos/Mashape/unirest-php/zipball/14aa9aa6919e4b70c59cd20722ac113c0ffeb45b",
             "reference": "14aa9aa6919e4b70c59cd20722ac113c0ffeb45b",
-            "shasum": ""
+            "shasum": "",
+            "mirrors": [
+                {
+                    "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                    "preferred": true
+                }
+            ]
         },
         "require": {
             "ext-curl": "*",
@@ -179,13 +197,19 @@
         "source": {
             "type": "git",
             "url": "https://github.com/bobthecow/mustache.php.git",
-            "reference": "e95c5a008c23d3151d59ea72484d4f72049ab7f4"
+            "reference": "5ec3021ab93231c1a137aecdd9ee5444115d1560"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/bobthecow/mustache.php/zipball/e95c5a008c23d3151d59ea72484d4f72049ab7f4",
-            "reference": "e95c5a008c23d3151d59ea72484d4f72049ab7f4",
-            "shasum": ""
+            "url": "https://api.github.com/repos/bobthecow/mustache.php/zipball/5ec3021ab93231c1a137aecdd9ee5444115d1560",
+            "reference": "5ec3021ab93231c1a137aecdd9ee5444115d1560",
+            "shasum": "",
+            "mirrors": [
+                {
+                    "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                    "preferred": true
+                }
+            ]
         },
         "require": {
             "php": ">=5.2.4"
@@ -194,7 +218,7 @@
             "friendsofphp/php-cs-fixer": "~1.11",
             "phpunit/phpunit": "~3.7|~4.0|~5.0"
         },
-        "time": "2019-11-23T21:40:31+00:00",
+        "time": "2020-03-21T17:11:37+00:00",
         "type": "library",
         "installation-source": "source",
         "autoload": {
@@ -233,7 +257,13 @@
             "type": "zip",
             "url": "https://api.github.com/repos/nrk/predis/zipball/d72f0678bade78af953605622760fe262d82eb58",
             "reference": "d72f0678bade78af953605622760fe262d82eb58",
-            "shasum": ""
+            "shasum": "",
+            "mirrors": [
+                {
+                    "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                    "preferred": true
+                }
+            ]
         },
         "require": {
             "php": ">=5.3.9"
@@ -284,18 +314,24 @@
         "source": {
             "type": "git",
             "url": "https://github.com/php-fig/log.git",
-            "reference": "5628725d0e4d687e29575eb41f9d5ee7de33a84c"
+            "reference": "0f73288fd15629204f9d42b7055f72dacbe811fc"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/php-fig/log/zipball/5628725d0e4d687e29575eb41f9d5ee7de33a84c",
-            "reference": "5628725d0e4d687e29575eb41f9d5ee7de33a84c",
-            "shasum": ""
+            "url": "https://api.github.com/repos/php-fig/log/zipball/0f73288fd15629204f9d42b7055f72dacbe811fc",
+            "reference": "0f73288fd15629204f9d42b7055f72dacbe811fc",
+            "shasum": "",
+            "mirrors": [
+                {
+                    "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                    "preferred": true
+                }
+            ]
         },
         "require": {
             "php": ">=5.3.0"
         },
-        "time": "2019-11-12T16:45:05+00:00",
+        "time": "2020-03-23T09:12:05+00:00",
         "type": "library",
         "extra": {
             "branch-alias": {
@@ -339,7 +375,13 @@
             "type": "zip",
             "url": "https://api.github.com/repos/vrana/notorm/zipball/e49d5d2f1bfe440dc82b61f46172635dfcb6f6dd",
             "reference": "e49d5d2f1bfe440dc82b61f46172635dfcb6f6dd",
-            "shasum": ""
+            "shasum": "",
+            "mirrors": [
+                {
+                    "url": "https://mirrors.aliyun.com/composer/dists/%package%/%reference%.%type%",
+                    "preferred": true
+                }
+            ]
         },
         "time": "2014-10-30T16:55:08+00:00",
         "type": "library",

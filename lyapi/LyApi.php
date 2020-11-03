@@ -2,83 +2,129 @@
 
 namespace LyApi;
 
+use APP\DI;
 use APP\program\Ecore;
 use LyApi\core\error\ClientException;
 use LyApi\core\error\CustomException;
 use LyApi\core\error\ServerException;
 use LyApi\core\error\OtherException;
+use LyApi\core\request\Request;
 use LyApi\tools\Config;
+use LyApi\tools\Template;
 
 class LyApi
 {
 
-    //LyAPI信息：
+    // LyAPI信息：
     public static $version = "1.7.0";
 
-    //输出接口程序最终的数据
-    private static function output($http_status_set = true)
-    {
-        $Api_Config = require LyApi . '/config/api.php';
-        $Using_ECore = Config::getConfig('func', '')['USING_ECORE'];
 
-        if ($Using_ECore) {
-            $ECore = new Ecore();
+    //普通对象函数
+    private $appConfig = [];
+
+    public function __construct($Config = [])
+    {
+        // 对配置进行处理
+        if (!array_key_exists("Http_Status_Set", $Config)) {
+            $Config['Http_Status_Set'] = true;
         }
 
-        $SERVICE = $Api_Config['GET_METHOD_SETTING']['DEFAULT_SERVICE'];
-        $RESPONSE = $Api_Config['DEFAULT_RESPONSE'];
-        $METHODS = $Api_Config['ACCESS_METHODS'];
+        $Config["apiConfig"] = Config::getConfig("api", "");
 
+        $this->appConfig = $Config;
 
-        if (isset($_REQUEST[$SERVICE]) || $METHODS == 'URL') {
+        DI::RegisterTree("LyApiObject", $this);
+    }
 
-            $nsps = array();
+    // 运行接口程序
+    public function Run()
+    {
+        $Config = $this->appConfig;
+        $resopnse = $this->processor();
 
-            // 判断启动类型
-            if ($METHODS != 'URL') {
+        self::httpStatus($resopnse[0]['status'], $Config['Http_Status_Set']);
 
-                // 获取选择的服务
-                $service = $_REQUEST[$SERVICE];
-                $nsps = explode($Api_Config['GET_METHOD_SETTING']['SERVICE_SEGMENTATION'], $service);
-            } else {
+        $result = $resopnse[1];
 
-                //处理路由，解析URL
-                $AccessUri =  $_SERVER['REQUEST_URI'];
+        if ($resopnse[0]['type'] == "API") {
+            header("content-type:application/json");
+            $result = json_encode($result, JSON_PRETTY_PRINT);
+        } else {
+            header("content-type:text/html");
+        }
+
+        echo $result;
+    }
+
+    public function processor($env_focus = "API", $uri_info = null)
+    {
+
+        // 系统配置文件读取
+        $apiConfig = Config::getConfig("api", "");
+        $funConfig = Config::getConfig("func", "");
+
+        $header = [
+            "status" => 200,
+            "type" => $env_focus
+        ];
+
+        if ($uri_info == null) {
+            $uri_info = $_SERVER['REQUEST_URI'];
+        }
+
+        // 启动 ECore 拓展程序
+        $usiEcore = null;
+        if ($funConfig['USING_ECORE']) {
+            $usiEcore = new Ecore();
+        }
+
+        $resopnse = $apiConfig['DEFAULT_RESPONSE'];
+        $methods = $apiConfig['ACCESS_METHODS'];
+        $service = $apiConfig['GET_METHOD_SETTING']['DEFAULT_SERVICE'];
+
+        if ($methods == "URL" || Request::Request($service) != "") {
+
+            $target_path = array();
+
+            if ($methods == "URL") {
+
+                $AccessUri = $uri_info;
 
                 if (strrpos($AccessUri, "?") != false) {
                     $AccessUri = substr($AccessUri, 0, strrpos($AccessUri, "?"));
                 }
                 $AccessArray = explode("/", $AccessUri);
                 $AccessArray = array_filter($AccessArray);
-                $DelNum = $Api_Config['URL_METHOD_SETTING']['EFFECTIVE_POSITION'];
+                $DelNum = $apiConfig['URL_METHOD_SETTING']['EFFECTIVE_POSITION'];
                 array_splice($AccessArray, 0, $DelNum);
                 if (sizeof($AccessArray) == 0) {
-                    array_push($nsps, $Api_Config['URL_METHOD_SETTING']['DEFAULT_CLASS'], $Api_Config['URL_METHOD_SETTING']['INDEX_FUNCTION']);
+                    array_push($target_path, $apiConfig['URL_METHOD_SETTING']['DEFAULT_CLASS'], $apiConfig['URL_METHOD_SETTING']['INDEX_FUNCTION']);
                 } elseif (sizeof($AccessArray) == 1) {
-                    array_push($nsps, $Api_Config['URL_METHOD_SETTING']['DEFAULT_CLASS'], $AccessArray[0]);
+                    array_push($target_path, $apiConfig['URL_METHOD_SETTING']['DEFAULT_CLASS'], $AccessArray[0]);
                 } else {
-                    $nsps = $AccessArray;
+                    $target_path = $AccessArray;
                 }
-                // var_dump($nsps);
+            } else {
+                $target = $_REQUEST[$service];
+                $target_path = explode($apiConfig['GET_METHOD_SETTING']['SERVICE_SEGMENTATION'], $target);
             }
 
+            // 取得函数名称
+            $func_name =  $target_path[sizeof($target_path) - 1];
+            array_pop($target_path);
 
-            $func =  $nsps[sizeof($nsps) - 1];
-            array_pop($nsps);
+            $namespace = "APP\\api\\" . join('\\', $target_path);
 
-            // 拼接命名空间，以便后面调用
-            $namespace = "APP\\api\\" . join('\\', $nsps);
-
-            $class = null;
+            $object = null;
             $rewrite_func = null;
 
             // 处理重写函数
-            if ($Using_ECore) {
+            if ($usiEcore) {
 
-                $Target_Result = $ECore->TargetFinding($namespace, $func);
+                $Target_Result = $usiEcore->TargetFinding($namespace, $func_name);
 
                 $namespace = $Target_Result['namespace'];
-                $func = $Target_Result['function'];
+                $func_name = $Target_Result['function'];
                 if (isset($Target_Result['rewrite'])) {
                     $rewrite_func = $Target_Result['rewrite'];
                 }
@@ -90,312 +136,234 @@ class LyApi
             }
 
             if (class_exists($namespace)) {
-                $class = new $namespace;
+                $object = new $namespace;
 
-                // 判断类型（接口 或 视图）
-                if (is_subclass_of($class, 'LyApi\core\classify\API')) {
-                    self::httpStatus(200, $http_status_set);
-                    $RS = array(
-                        'code' => '200',
-                        'data' => null,
-                        'msg' => ''
-                    );
-                    $methods = get_class_methods($namespace);
-                    $Func_Config = require LyApi . '/config/func.php';
+                if (is_subclass_of($object, 'LyApi\core\classify\VIEW')) {
 
-                    //调用初始函数
-                    if (in_array($Func_Config['INIT_FUNC'], $methods)) {
-                        @$class->$Func_Config['INIT_FUNC']($func);
-                    }
-
-                    // 开始调用主函数
-                    try {
-                        if (in_array($func, $methods)) {
-
-                            if ($rewrite_func == null) {
-                                @$Func_Return = $class->$func('API', $_REQUEST);
-                            } else {
-
-                                @$Func_Return = $rewrite_func('API', $_REQUEST, $backval);
-                            }
-
-                            if (true) {
-
-                                $Cust_Code = array_search('$code', $RESPONSE);
-                                $Cust_Message = array_search('$msg', $RESPONSE);
-                                $Cust_Data = array_search('$data', $RESPONSE);
-
-                                //处理自定义函数数据
-                                if (array_key_exists('FUNCITON_SET_DATA', $Func_Config)) {
-
-                                    $Func_SetData = $Func_Config['FUNCITON_SET_DATA'];
-
-                                    $Func_SetCode = $Func_SetData['CUSTON_SUCCESS_CODE'];
-                                    $Func_SetDatas = $Func_SetData['CUSTON_SUCCESS_DATA'];
-                                    $Func_SetMessage = $Func_SetData['CUSTON_SUCCESS_MESSAGE'];
-                                    $Func_SetCustKey = $Func_SetData['CUSTON_SUCCESS_CUSTOM_KEYS'];
-                                    $Func_HiddenKey = $Func_SetData['CUSTON_SUCCESS_HIDDEN_KEYS'];
-
-                                    //通过各种数据来设置code 和 msg 优先级 (2)
-                                    if (array_key_exists($func, $class->API_Function_Data)) {
-                                        if (is_array($class->API_Function_Data[$func])) {
-                                            if (array_key_exists($Func_SetCode, $class->API_Function_Data[$func])) {
-                                                $RS['code'] = $class->API_Function_Data[$func][$Func_SetCode];
-                                            }
-
-                                            if (array_key_exists($Func_SetMessage, $class->API_Function_Data[$func])) {
-                                                $RS['msg'] = $class->API_Function_Data[$func][$Func_SetMessage];
-                                            }
-
-                                            if (array_key_exists($Func_SetDatas, $class->API_Function_Data[$func])) {
-                                                $RS['data'] = $class->API_Function_Data[$func][$Func_SetDatas];
-                                            }
-
-                                            if (array_key_exists($Func_SetCustKey, $class->API_Function_Data[$func])) {
-                                                $Func_CustKeys = $class->API_Function_Data[$func][$Func_SetCustKey];
-                                                if (is_array($Func_CustKeys)) {
-                                                    foreach ($Func_CustKeys as $key => $value) {
-                                                        $RS[array_search('$' . $key, $RESPONSE)] = $value;
-                                                    }
-                                                }
-                                            }
-
-                                            // 将被隐藏的Key删除
-                                            if (array_key_exists($Func_HiddenKey, $class->API_Function_Data[$func])) {
-                                                $Func_Hidden = $class->API_Function_Data[$func][$Func_HiddenKey];
-                                                if (is_array($Func_Hidden)) {
-                                                    foreach ($Func_Hidden as $key => $value) {
-                                                        unset($RESPONSE[array_search('$' . $value, $RESPONSE)]);
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    } elseif (array_key_exists('all', $class->API_Function_Data)) {
-                                        // 处理全局函数数据
-                                        if (is_array($class->API_Function_Data['all'])) {
-                                            if (array_key_exists($Func_SetCode, $class->API_Function_Data['all'])) {
-                                                $RS['code'] = $class->API_Function_Data['all'][$Func_SetCode];
-                                            }
-
-                                            if (array_key_exists($Func_SetMessage, $class->API_Function_Data['all'])) {
-                                                $RS['msg'] = $class->API_Function_Data['all'][$Func_SetMessage];
-                                            }
-
-                                            if (array_key_exists($Func_SetDatas, $class->API_Function_Data['all'])) {
-                                                $RS['data'] = $class->API_Function_Data['all'][$Func_SetDatas];
-                                            }
-
-                                            if (array_key_exists($Func_SetCustKey, $class->API_Function_Data['all'])) {
-                                                $Func_CustKeys = $class->API_Function_Data['all'][$Func_SetCustKey];
-                                                if (is_array($Func_CustKeys)) {
-                                                    foreach ($Func_CustKeys as $key => $value) {
-                                                        $RS[array_search('$' . $key, $RESPONSE)] = $value;
-                                                    }
-                                                }
-                                            }
-
-                                            // 将被隐藏的Key删除
-                                            if (array_key_exists($Func_HiddenKey, $class->API_Function_Data['all'])) {
-                                                $Func_Hidden = $class->API_Function_Data['all'][$Func_HiddenKey];
-                                                if (is_array($Func_Hidden)) {
-                                                    foreach ($Func_Hidden as $key => $value) {
-                                                        unset($RESPONSE[array_search('$' . $value, $RESPONSE)]);
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // 处理返回数组的一些特别信息 优先级（1）
-                                if (is_array($Func_Return)) {
-
-                                    if (array_key_exists('#' . $Cust_Code, $Func_Return)) {
-                                        $RS['code'] = $Func_Return['#' . $Cust_Code];
-                                        unset($Func_Return['#' . $Cust_Code]);
-                                    }
-
-                                    if (array_key_exists('#' . $Cust_Message, $Func_Return)) {
-                                        $RS['msg'] = $Func_Return['#' . $Cust_Message];
-                                        unset($Func_Return['#' . $Cust_Message]);
-                                    }
-
-                                    if (array_key_exists('#' . $Cust_Data, $Func_Return)) {
-                                        $RS['data'] = $Func_Return['#' . $Cust_Data];
-                                        unset($Func_Return['#' . $Cust_Data]);
-                                    }
-
-                                    foreach ($Func_Return as $Return_Key => $Return_Val) {
-                                        if (substr($Return_Key, 0, 1) == '#') {
-                                            $Custom_DValue = '$' . substr($Return_Key, 1);
-                                            if (in_array($Custom_DValue, $RESPONSE)) {
-                                                $Custom_DataOne = array_search($Custom_DValue, $RESPONSE);
-                                                $RS[$Custom_DataOne] = $Return_Val;
-                                                unset($Func_Return[$Return_Key]);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            //处理返回值为NULL的情况 优先级 (0)
-                            if (!is_null($Func_Return) && $Func_Return != []) {
-                                $RS['data'] = $Func_Return;
-                            }
-                        } else {
-
-                            $function_not_find = $Api_Config['ERROR_MESSAGE']['function_not_find'];
-
-                            self::httpStatus($function_not_find['code'], $http_status_set);
-                            echo self::CreateRs($RESPONSE, $function_not_find);
-                            return $function_not_find['code'];
-                        }
-                        //捕获异常
-                    } catch (ClientException $e) {
-                        self::httpStatus($e->ErrorCode(), $http_status_set);
-                        $RS['code'] = $e->ErrorCode();
-                        $RS['msg'] = $e->ErrorMsg();
-                        $RS['data'] = array();
-                    } catch (ServerException $e) {
-                        self::httpStatus($e->ErrorCode(), $http_status_set);
-                        $RS['code'] = $e->ErrorCode();
-                        $RS['msg'] = $e->ErrorMsg();
-                        $RS['data'] = array();
-                    } catch (OtherException $e) {
-                        self::httpStatus($e->ErrorCode(), $http_status_set);
-                        $RS['code'] = $e->ErrorCode();
-                        $RS['msg'] = $e->ErrorMsg();
-                        $RS['data'] = array();
-                    } catch (CustomException $e) {
-                        self::httpStatus($e->getCode(), $http_status_set);
-                        echo $e->getMessage();
-                        return $e->ErrorCode();
-                    }
-
-                    if ($Using_ECore) {
-                        $Tmp_FinalExamine_Data = $ECore->FinalExamine($RESPONSE, $RS);
-                        $RESPONSE = $Tmp_FinalExamine_Data['structure'];
-                        $RS = $Tmp_FinalExamine_Data['data'];
-                    }
-                    self::httpStatus($RS['code'], $http_status_set);
-                    echo self::CreateRs($RESPONSE, $RS);
-
-                    //调用结束函数
-                    if (in_array($Func_Config['AFTER_FUNC'], $methods)) {
-                        @$class->$Func_Config['AFTER_FUNC']();
-                    }
-
-                    return $RS['code'];
-                } elseif (is_subclass_of($class, 'LyApi\core\classify\VIEW')) {
                     // 处理VIEW视图渲染
 
+                    $header['type'] = "VIEW";
+
                     $methods = get_class_methods($namespace);
-                    $Func_Config = require LyApi . '/config/func.php';
+                    $funcConfig = Config::getConfig("func", '');
 
                     //调用初始函数
-                    if (in_array($Func_Config['INIT_FUNC'], $methods)) {
-                        @$class->$Func_Config['INIT_FUNC']($func);
+                    if (in_array($funcConfig['INIT_FUNC'], $methods)) {
+                        $init_name = $funcConfig['INIT_FUNC'];
+                        @$object->$init_name($func_name);
                     }
 
                     // 处理VIEW视图的异常
-                    if (in_array($func, $methods)) {
+                    if (in_array($func_name, $methods)) {
                         try {
+
                             if ($rewrite_func == null) {
-                                echo $class->$func('API', $_REQUEST);
+                                return [$header, $object->$func_name('API', $_REQUEST)];
                             } else {
-                                echo $rewrite_func('API', $_REQUEST, $backval);
+                                return [$header, $rewrite_func('API', $_REQUEST, $backval)];
                             }
                         } catch (ClientException $e) {
-                            echo self::ShowError($e->ErrorCode());
+                            $header['status'] = $e->ErrorCode();
+                            return [$header, self::ShowError("VIEW", $e->ErrorCode(), $e->ErrorMsg())];
                         } catch (ServerException $e) {
-                            echo self::ShowError($e->ErrorCode());
+                            $header['status'] = $e->ErrorCode();
+                            return [$header, self::ShowError("VIEW", $e->ErrorCode(), $e->ErrorMsg())];
                         } catch (OtherException $e) {
-                            echo self::ShowError($e->ErrorCode());
+                            $header['status'] = $e->ErrorCode();
+                            return [$header, self::ShowError("VIEW", $e->ErrorCode(), $e->ErrorMsg())];
                         } catch (CustomException $e) {
-                            self::httpStatus($e->ErrorCode(), $http_status_set);
-                            echo self::CreateRs($RESPONSE, [
-                                'code' => $e->ErrorCode(),
-                                'data' => $e->getMessage(),
-                                'msg' => ''
-                            ]);
+                            $header['type'] = "API";
+                            return [$header, $e->ErrorMsg()];
                         }
                     } else {
-                        echo self::ShowError(404);
+                        $header['status'] = 404;
+                        return [$header, self::ShowError("VIEW", 404, "目标程序不存在")];
                     }
 
                     //调用结束函数
-                    if (in_array($Func_Config['AFTER_FUNC'], $methods)) {
-                        @$class->$Func_Config['AFTER_FUNC']($func);
+                    if (in_array($funcConfig['AFTER_FUNC'], $methods)) {
+                        $after_name = $funcConfig['AFTER_FUNC'];
+                        @$object->$after_name($func_name);
+                    }
+                } elseif (is_subclass_of($object, 'LyApi\core\classify\API')) {
+
+                    $all_data = array();
+
+                    $header['type'] = "API";
+
+                    $methods = get_class_methods($namespace);
+                    $funcConfig = Config::getConfig("func", '');
+
+                    //调用初始函数
+                    if (in_array($funcConfig['INIT_FUNC'], $methods)) {
+                        $init_name = $funcConfig['INIT_FUNC'];
+                        @$object->$init_name($func_name);
                     }
 
-                    return 200;
-                } else {
+                    // 处理API调用程序
+                    if (in_array($func_name, $methods)) {
+                        try {
+                            if ($rewrite_func == null) {
 
-                    // ERROR：对象未继承的情况下
-                    $class_not_extend = $Api_Config['ERROR_MESSAGE']['class_not_extend'];
+                                $retinfo = $object->$func_name('API', $_REQUEST);
+                                $retdata = $object->_FUNCDATA;
 
-                    self::httpStatus($class_not_extend['code'], $http_status_set);
-                    echo self::CreateRs($RESPONSE, $class_not_extend);
-                    return $class_not_extend['code'];
+                                $result = $this->createStructure($retinfo, $retdata);
+                                $header['status'] = $result[0];
+
+
+                                return [$header, $result[1]];
+                            } else {
+                                return [$header, $rewrite_func('API', $_REQUEST, $backval)];
+                            }
+                        } catch (ClientException $e) {
+                            $header['status'] = $e->ErrorCode();
+                            return [$header, self::ShowError("API", $e->ErrorCode(), $e->ErrorMsg())];
+                        } catch (ServerException $e) {
+                            $header['status'] = $e->ErrorCode();
+                            return [$header, self::ShowError("API", $e->ErrorCode(), $e->ErrorMsg())];
+                        } catch (OtherException $e) {
+                            $header['status'] = $e->ErrorCode();
+                            return [$header, self::ShowError("API", $e->ErrorCode(), $e->ErrorMsg())];
+                        } catch (CustomException $e) {
+                            $header['type'] = "VIEW";
+                            return [$header, $e->ErrorMsg()];
+                        }
+                    } else {
+                        $function_not_find = $apiConfig['ERROR_MESSAGE']['function_not_find'];
+                        $res = $this->createStructure($function_not_find)[1];
+
+                        $header['status'] = $function_not_find['#code'];
+
+                        return [$header, $res];
+                    }
+
+                    //调用结束函数
+                    if (in_array($funcConfig['AFTER_FUNC'], $methods)) {
+                        $after_name = $funcConfig['AFTER_FUNC'];
+                        @$object->$after_name($func_name);
+                    }
                 }
             } else {
+                $class_not_find = $apiConfig['ERROR_MESSAGE']['class_not_find'];
 
-                // ERROR：对象不存在的情况下
-                $class_not_find = $Api_Config['ERROR_MESSAGE']['class_not_find'];
-
-                self::httpStatus($class_not_find['code'], $http_status_set);
-                echo self::CreateRs($RESPONSE, $class_not_find);
-                return $class_not_find['code'];
+                $header['status'] = $class_not_find['#code'];
+                $header['type'] = "API";
+                return [$header, $this->showError("API", $class_not_find)[1]];
             }
         } else {
+            $service_not_find = $apiConfig['ERROR_MESSAGE']['service_not_find'];
 
-            // ERROR：服务不存在的情况下
-            $service_not_find = $Api_Config['ERROR_MESSAGE']['service_not_find'];
 
-            self::httpStatus($service_not_find['code'], $http_status_set);
-            echo self::CreateRs($RESPONSE, $service_not_find);
-            return $service_not_find['code'];
+            $header['status'] = $service_not_find['#code'];
+            $header['type'] = "API";
+            return [$header, $this->showError("API", $service_not_find)[1]];
         }
     }
 
-    // 创建返回数据函数
-    private static function CreateRs($response, $value, $other = array())
+    // 接口结构生成
+    public function createStructure($data, $func = [])
     {
+        $apiConfig = $this->appConfig['apiConfig'];
+        $resopnse = $apiConfig['DEFAULT_RESPONSE'];
 
-        $Using_ECore = Config::getConfig('func', '')['USING_ECORE'];
-
-        $new_response = null;
-
-        if ($Using_ECore) {
-            $ECore = new Ecore();
-            $new_response = $ECore->CreateResult($response, $value, $other);
+        if (array_key_exists('CODE_CONTROLLER', $apiConfig)) {
+            $codeController = $apiConfig['CODE_CONTROLLER'];
+            if (substr($codeController, 0, 1) == '$') {
+                $codeController = substr($codeController, 1, strlen($codeController) - 1);
+            }
+        } else {
+            $codeController = "code";
         }
 
+        $status = 200;
+        $expand = [];
+        $delete = [];
 
-        if ($new_response == null) {
-            foreach ($response as $key => $val) {
-                if ($val == '$data') {
-                    $new_response[$key] = $value['data'];
-                } else if ($val == '$code') {
-                    $new_response[$key] = $value['code'];
-                } else if ($val == '$msg') {
-                    $new_response[$key] = $value['msg'];
+        if ($func != []) {
+            $delete = array_merge($delete, $func['hiddens']);
+        }
+
+        $structure = array();
+
+        if ($data == null) {
+            $data = [];
+        }
+
+        if (is_string($data)) {
+            $data = [
+                "data" => $data
+            ];
+        } else {
+            $temp_data = [];
+            foreach ($data as $key => $value) {
+                if (substr($key, 0, 1) == "#") {
+                    $data[substr($key, 1, strlen($key) - 1)] = $value;
+                } elseif (substr($key, 0, 1) == "~") {
+                    $expand[substr($key, 1, strlen($key) - 1)] = $value;
+                } elseif (substr($key, 0, 1) == "^") {
+                    array_push($delete, substr($key, 1, strlen($key) - 1));
                 } else {
-                    if (array_key_exists($key, $value)) {
-                        $new_response[$key] = $value[$key];
-                    } elseif (array_key_exists(substr($val, 1), $other)) {
-                        $new_response[$key] = $other[substr($val, 1)];
+                    $temp_data[$key] = $value;
+                }
+            }
+
+            if ($temp_data != []) {
+                $data['data'] = $temp_data;
+            }
+        }
+
+        foreach ($resopnse as $key => $value) {
+            if (substr($value, 0, 1) == "$") {
+                $need_data = substr($value, 1, strlen($value) - 1);
+                if (array_key_exists($need_data, $data)) {
+
+                    if ($need_data == $codeController) {
+                        $status = $data[$need_data];
+                    }
+
+                    $structure[$key] = $data[$need_data];
+                } else {
+                    if ($need_data == $codeController) {
+                        $structure[$need_data] = 200;
                     } else {
-                        $new_response[$key] = $val;
+                        $structure[$need_data] = "";
                     }
                 }
             }
         }
 
-        return json_encode($new_response, JSON_UNESCAPED_UNICODE);
+        foreach ($expand as $key => $value) {
+            $structure[$key] = $value;
+        }
+
+        foreach ($delete as $key) {
+            unset($structure[$key]);
+        }
+
+        return [$status, $structure];
     }
 
-    //处理接口返回的状态码
+
+    public function showError($focus = "API", $data = array(), $errinfo = "")
+    {
+        if ($focus != "API") {
+            $DirPath = LyApi . '/app/view/error/';
+            if (is_file($DirPath . $data . '.html')) {
+                return Template::RenderTemplate(file_get_contents($DirPath . $data . '.html'), [
+                    'ERRINFO' => $errinfo
+                ]);
+            } else {
+                return Template::RenderTemplate(file_get_contents($DirPath . 'default.html'), [
+                    "ERRINFO" => $errinfo,
+                    "ERRCODE" => $data
+                ]);
+            }
+        } else {
+            return $this->createStructure($data);
+        }
+    }
+
     private static function httpStatus($num, $use_header = true)
     {
 
@@ -450,38 +418,5 @@ class LyApi
             header("HTTP/1.1 " . (string) $num . " Undefined");
         }
         return;
-    }
-
-    private static function ShowError($code = 404)
-    {
-        $DirPath = LyApi . '/app/view/error/';
-        if (is_file($DirPath . $code . '.html')) {
-            return file_get_contents($DirPath . $code . '.html');
-        } else {
-            return file_get_contents($DirPath . 'default.html');
-        }
-    }
-
-    // 普通对象函数
-    private $APP_Config = [];
-    private $Response_Code = 400;
-
-    public function __construct($Config = [])
-    {
-        // 对配置进行处理
-        if (!array_key_exists("Http_Status_Set", $Config)) {
-            $Config['Http_Status_Set'] = true;
-        }
-
-        $this->APP_Config = $Config;
-    }
-
-    // 运行接口程序
-    public function Run()
-    {
-        $Config = $this->APP_Config;
-        $RespCode = self::output($Config['Http_Status_Set']);
-        $this->Response_Code = $RespCode;
-        return $RespCode;
     }
 }

@@ -12,5 +12,6 @@ return array(
     'Plugin\\' => array($baseDir . '/plugin'),
     'Medoo\\' => array($vendorDir . '/catfan/medoo/src'),
     'LyApi\\' => array($baseDir . '/lyapi'),
+    'Admin\\' => array($baseDir . '/admin'),
     'APP\\' => array($baseDir . '/app'),
 );

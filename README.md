@@ -182,7 +182,7 @@ PS: 任何问题直接联系我就行，我会第一时间解决问题。
 
 > 如发现更多问题请 发布Issue 或 加群反馈 
 
-[1]: http://lyapi.org/trial.html
+[1]: http://lyapi.wwsg18.com/trial.html
 [2]: https://packagist.org/users/wwsg18/
 [3]: https://mit-license.org
 [4]: https://mrxzx.gitee.io/lyapi-docs/#/

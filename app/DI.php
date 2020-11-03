@@ -23,12 +23,6 @@ class DI
         return TParty::Medoo($ConfigSelect);
     }
 
-    // NotORM DataBase Handle Library
-    public static function NotORM($AutoLoad = null, $PdoObject = null)
-    {
-        return TParty::NotORM($AutoLoad, $PdoObject);
-    }
-
     // PDO DataBase Handle Object
     public static function PDO($AutoLoad = null, $DSN = null)
     {
@@ -86,6 +80,7 @@ class DI
         if (class_exists($class_path)) {
             eval('$object = new $class_path(' . implode(",", $args) . ');');
         }
+
         return $object;
     }
 

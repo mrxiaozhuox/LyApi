@@ -4,26 +4,27 @@ namespace LyApi\core\classify;
 
 use LyApi\tools\Config;
 
-class BASIC{
+class BASIC
+{
 
     public static function GetMethod()
     {
-        $Config = Config::getConfig('api','');
-        return $Config['ACCESS_METHODS'];
+        return  Config::getConfig('api', '')['ACCESS_METHODS'];
     }
 
-    public static function GetParam(){
-        if(self::GetMethod() == 'URL'){
-            $AccessUri =  $_SERVER['REQUEST_URI']; 
+    public static function GetParam()
+    {
+        if (self::GetMethod() == 'URL') {
+            $AccessUri =  $_SERVER['REQUEST_URI'];
 
-            if(strrpos($AccessUri,"?") != false){
-                $AccessUri = substr($AccessUri,0,strrpos($AccessUri,"?"));
+            if (strrpos($AccessUri, "?") != false) {
+                $AccessUri = substr($AccessUri, 0, strrpos($AccessUri, "?"));
             }
-            
-            $AccessArray = explode("/",$AccessUri);
+
+            $AccessArray = explode("/", $AccessUri);
             $AccessArray = array_filter($AccessArray);
             return $AccessArray;
-        }else{
+        } else {
             return $_REQUEST;
         }
     }

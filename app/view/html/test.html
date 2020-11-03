@@ -62,7 +62,6 @@
         <p style='color:#a2a2a2;'>测试框架的部分功能，稳定性测试...</p>
     </center>
     <script>
-
         function demoTest() {
             layer.prompt({
                 title: '请输入要访问的函数', 
@@ -97,7 +96,7 @@
                 url: "Demo/Hello",
                 async: false,
                 success: function (result) {
-                    layer.msg(result);
+                    // layer.msg(JSON.stringify(result));
                 },
                 error: function (err) {
                     layer.msg("请求错误代码：" + err.status);

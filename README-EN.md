@@ -140,7 +140,7 @@ PS: Contact me directly for any problem, and I will solve it as soon as possible
 
 > If you find any more problems, Please create issue or add group feedback
 
-[1]: http://lyapi.org/trial.html
+[1]: http://lyapi.wwsg18.com/trial.html
 [2]: https://packagist.org/users/wwsg18/
 [3]: https://mit-license.org
 [4]: https://mrxzx.gitee.io/lyapi-docs/#/

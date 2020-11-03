@@ -161,17 +161,6 @@ class Demo extends API
     }
 
     /**
-     * service Demo.Plugin
-     * introduce 插件测试
-     */
-    public function Plugin()
-    {
-        //使用DI下的PluginDyn函数可以动态获取对象
-        $demo = DI::PluginDyn('Template', 'Template');
-        return $demo->GetPluginName();
-    }
-
-    /**
      * service Demo.CustomMsg
      * introduce 自定义数据测试
      */
@@ -194,32 +183,13 @@ class Demo extends API
     }
 
     /**
-     * service Demo.FuncData
-     * introduce 自定义 Code 和 Message
-     */
-    public function FuncData()
-    {
-
-        $this->SetFuncData([
-            'code' => 233,
-            'msg' => 'Hello Demo.FuncData'
-        ], 'FuncData');
-
-
-        return 'Hello LyApi';
-    }
-
-    /**
      * service Demo.HiddenKey
      * introduce 隐藏某个Key的显示
      */
     public function HiddenKey()
     {
         //仅隐藏HiddenKey
-        $this->HiddenKeys('msg', 'HiddenKey');
-
-        //隐藏所有函数的显示（这种方法需要写在 构造函数 或 初始函数 中）
-        // $this->HiddenKeys('msg');
+        $this->HiddenKeys('msg');
 
         return 'Message is Hidden';
     }
@@ -231,10 +201,7 @@ class Demo extends API
     public function RunApi()
     {
         // 当前功能自定义数据仅支持 Retunrn 方法
-        return Launch::LaunchApi('APP\api\Demo', 'CustomMsg');
-
-        // 如果是FuncData式，则不会处理
-        // return Launch::LaunchApi('APP\api\Demo','FuncData');   
+        return Launch::LaunchApi('Demo.CustomMsg');
     }
 
     /**
